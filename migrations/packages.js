@@ -20,8 +20,8 @@ const proxyAgent = new ProxyAgent({
 // Define a custom fetch function that uses the ProxyAgent
 const myFetch = (url, options = {}) => {
   return undiciFetch(url, {
-    ...options,
-    dispatcher: proxyAgent,  // Attach the ProxyAgent to the dispatcher option
+    ...options
+    // dispatcher: proxyAgent,  // Attach the ProxyAgent to the dispatcher option
   });
 };
 
