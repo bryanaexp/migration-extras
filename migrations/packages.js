@@ -11,17 +11,17 @@ const SOURCE_TOKEN = process.env.SOURCE_TOKEN;
 const TARGET_TOKEN = process.env.TARGET_TOKEN;
 
 // Create a ProxyAgent instance with your proxy settings
-const proxyAgent = new ProxyAgent({
-  uri: process.env.HTTPS_PROXY,  // URL of the proxy server
-  keepAliveTimeout: 10,          // Optional, set keep-alive timeout
-  keepAliveMaxTimeout: 10        // Optional, set max keep-alive timeout
-});
+// const proxyAgent = new ProxyAgent({
+//   uri: process.env.HTTPS_PROXY,  // URL of the proxy server
+//   keepAliveTimeout: 10,          // Optional, set keep-alive timeout
+//   keepAliveMaxTimeout: 10        // Optional, set max keep-alive timeout
+// });
 
 // Define a custom fetch function that uses the ProxyAgent
 const myFetch = (url, options = {}) => {
   return undiciFetch(url, {
-    ...options,
-    dispatcher: proxyAgent,  // Attach the ProxyAgent to the dispatcher option
+    ...options
+    // dispatcher: proxyAgent,  // Attach the ProxyAgent to the dispatcher option
   });
 };
 
