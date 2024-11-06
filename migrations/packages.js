@@ -281,7 +281,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
           await publishNpmPackage(targetOrg, pkg.name, version.name);
           break;
         case 'container':
-          // execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
+          execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
           for (const file of filesToDownload) {
             const fileUrl = `${downloadPackageUrl}/${file}`;
             await downloadPackageFiles(fileUrl, pkg.name, file);
