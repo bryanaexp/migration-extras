@@ -38,7 +38,6 @@ const myFetch = (url, options = {}) => {
 export async function migratePackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packageType, dryRun, verbose) {
   setVerbosity(verbose);
   logger.info(`Starting package migration process... (Dry Run: ${dryRun})`);
-
   try {
     if (!dryRun) {
       preparePackagesDirectory();
@@ -46,7 +45,7 @@ export async function migratePackages(sourceOctokit, targetOctokit, sourceGraphQ
     const packages = await fetchPackages(sourceOctokit, sourceOrg, packageType);
     await processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun);
   } catch (error) {
-    logger.error('Error migrating packages:', error.message);
+    logger.error('Error migrating packages:', error);
   }
 }
 
@@ -68,11 +67,14 @@ function preparePackagesDirectory() {
  * @returns {Array} Array of packages
  */
 async function fetchPackages(sourceOctokit, sourceOrg, packageType) {
+  console.log("> Fetching packages")
   const { data: packages } = await sourceOctokit.packages.listPackagesForOrganization({
     package_type: packageType,
-    org: sourceOrg
+    org: sourceOrg,
+    per_page:100,
+    page:1
   });
-  logger.info(`Found ${packages.length} packages in organization: ${sourceOrg}`);
+  console.log(`Found ${packages.length} packages in organization: ${sourceOrg}`);
   return packages;
 }
 
@@ -88,11 +90,14 @@ async function fetchPackages(sourceOctokit, sourceOrg, packageType) {
  */
 async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun) {
   for (const pkg of packages) {
+    console.log("> Processing: " + pkg.name)
     try {
       await processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun);
     } catch (error) {
       logger.error(`Error processing package ${pkg.name}:`, error);
     }
+    console.log("*************************************************************************************************************************************************************************************************************************")
+    break
   }
 }
 
@@ -107,7 +112,7 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
  * @param {boolean} dryRun - Whether to perform a dry run
  */
 async function processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun) {
-  logger.info(`Processing package: ${pkg.name} (${pkg.package_type})`);
+  console.log(`Processing package: ${pkg.name} (${pkg.package_type})`);
   if (!(await checkTargetRepository(targetOctokit, targetOrg, pkg.repository.name))) {
     return;
   }
@@ -135,7 +140,7 @@ async function processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targe
  */
 async function checkTargetRepository(targetOctokit, targetOrg, repoName) {
   try {
-    logger.info(`Checking if repository ${repoName} exists in target organization...`);
+    console.log(`\tChecking if repository ${repoName} exists in target organization...`);
     await targetOctokit.repos.get({
       owner: targetOrg,
       repo: repoName
@@ -156,9 +161,9 @@ async function checkTargetRepository(targetOctokit, targetOrg, repoName) {
  */
 async function checkPackageExistsInTarget(targetOctokit, targetOrg, packageName, packageType) {
   try {
-    logger.info(`Checking if package ${packageName} exists in target organization...`);
-    logger.info(`Package type: ${packageType}`);
-    logger.info(`Target org: ${packageName}`);
+    console.log(`\tChecking if package ${packageName} exists in target organization...`);
+    // logger.info(`Package type: ${packageType}`);
+    // logger.info(`Target org: ${packageName}`);
     await targetOctokit.packages.getPackageForOrganization({
       package_type: packageType,
       package_name: packageName,
@@ -179,13 +184,14 @@ async function checkPackageExistsInTarget(targetOctokit, targetOrg, packageName,
  * @returns {Array} Array of package versions
  */
 async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
-  logger.info(`Fetching versions of package: ${pkg.name} (${pkg.package_type})`);
+  console.log(`\t> Fetching versions of package: ${pkg.name} ${pkg.package_type}` )
+  // logger.info(`Fetching versions of package: ${pkg.name} (${pkg.package_type})`);
   const { data: versions } = await sourceOctokit.packages.getAllPackageVersionsForPackageOwnedByOrg({
     package_type: pkg.package_type,
     package_name: pkg.name,
     org: sourceOrg
   });
-  logger.info(`Found ${versions.length} versions of the package ${pkg.name}`);
+  console.log(`\t\t- Found ${versions.length} versions of the package ${pkg.name}`);
   return versions;
 }
 
@@ -200,11 +206,15 @@ async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
  * @param {Array} versions - Array of package versions
  */
 async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun) {
+  console.log("\t> Starting Package Verion Migration")
   for (const version of versions.reverse()) {
     try {
       await migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun);
     } catch (versionError) {
-      logger.error(`Error migrating version ${version.name} of ${pkg.name}:`, versionError.message);
+      // console.log(`> Error migrating version ${version.name} of ${pkg.name}:`, versionError.message);
+
+      console.log('> Moving to next version...\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+      break
     }
   }
 }
@@ -221,11 +231,11 @@ async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQ
  * @param {boolean} dryRun - Whether to perform a dry run
  */
 async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun) {
-  logger.info(`Migrating version ${version.name} of package ${pkg.name}`);
+  console.log(`\t\t> Migrating version ${version.name} of package ${pkg.name}`);
 
   try {
     const packageContent = await getPackageContent(sourceOctokit, sourceOrg, pkg, version.name);
-    logger.debug('Package content retrieved successfully');
+    console.log('\t\t\t - Package content retrieved successfully');
 
     const { downloadBaseUrl, downloadPackageUrl, uploadPackageUrl } = getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, version.name);
 
@@ -251,7 +261,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
       return;
     }
 
-    logger.debug(`Files to download: ${filesToDownload.join(', ')}`);
+    console.log(`\t\t\t- Files to download: ${filesToDownload.join(', ')}`);
 
     if (dryRun) {
       logger.info(`[Dry Run] Would download ${filesToDownload.length} files for ${pkg.name} version ${version.name}`);
@@ -271,12 +281,14 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
           await publishNpmPackage(targetOrg, pkg.name, version.name);
           break;
         case 'container':
-          execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
+          // execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
           for (const file of filesToDownload) {
             const fileUrl = `${downloadPackageUrl}/${file}`;
             await downloadPackageFiles(fileUrl, pkg.name, file);
+            break
           }
-          execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
+          console.log("> All files downloaded")
+          // execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
           await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
           break;
       }
@@ -284,7 +296,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
 
     logger.info(`${dryRun ? '[Dry Run] Would migrate' : 'Migrated'} version ${version.name} of ${pkg.name}`);
   } catch (error) {
-    logger.error(`Error migrating version ${version.name} of ${pkg.name}: ${error.message}`);
+    console.log(`> Error migrating version ${version.name} of ${pkg.name}: ${error.message}`);
     if (error.stack) {
       logger.debug(`Stack trace: ${error.stack}`);
     }
@@ -411,7 +423,7 @@ async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
  */
 async function downloadPackageFiles(fileUrl, packageName, fileName) {
   fs.mkdirSync(`packages/${packageName}`, { recursive: true });
-  logger.debug(`Downloading ${fileUrl}`);
+  console.log(`Downloading ${fileUrl}`);
   if (fileUrl.includes('ghcr.io')) {
     execSync(`docker pull ${fileUrl}`);
     execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
@@ -482,7 +494,7 @@ async function publishNpmPackage(org, package_name, package_version) {
  */
 async function pushContainerPackage(downloadPackageUrl, uploadPackageUrl, package_name, filesToUpload, version) {
   for (const file of filesToUpload) {
-    logger.info(`retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    console.log(`> Retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker tag ${downloadPackageUrl}/${file} ${uploadPackageUrl}/${file}`);
     logger.info(`pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker push ghcr.io/${process.env.TARGET_ORG}/${file}`);
@@ -681,3 +693,4 @@ async function listMavenPackageAssets(package_type, package_name, sourceGraphQL,
     return [];
   }
 }
+
