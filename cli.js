@@ -21,19 +21,19 @@ dotenv.config();
  */
 async function createOctokitInstance(token, verbose) {
 
-  const myFetch = (url, opts) => {
-    return undiciFetch(url, {
-      ...opts,
-      dispatcher: new ProxyAgent({
-        uri: process.env.HTTPS_PROXY,
-        keepAliveTimeout: 10,
-        keepAliveMaxTimeout: 10,
-      }),
-    });
-  };
+  // const myFetch = (url, opts) => {
+  //   return undiciFetch(url, {
+  //     ...opts,
+  //     dispatcher: new ProxyAgent({
+  //       uri: process.env.HTTPS_PROXY,
+  //       keepAliveTimeout: 10,
+  //       keepAliveMaxTimeout: 10,
+  //     }),
+  //   });
+  // };
 
   const octokit = new Octokit({
-    request: { fetch: myFetch },
+    // request: { fetch: myFetch },
     auth: token,
     throttle: {
       onRateLimit: (retryAfter, options) => {
@@ -57,22 +57,22 @@ async function createOctokitInstance(token, verbose) {
 }
 
 async function createGraphQLInstance(token, verbose) {
-  const myFetch = (url, opts) => {
-    return undiciFetch(url, {
-      ...opts,
-      dispatcher: new ProxyAgent({
-        uri: process.env.HTTPS_PROXY,
-        keepAliveTimeout: 10,
-        keepAliveMaxTimeout: 10,
-      }),
-    });
-  };
+  // const myFetch = (url, opts) => {
+  //   return undiciFetch(url, {
+  //     ...opts,
+  //     dispatcher: new ProxyAgent({
+  //       uri: process.env.HTTPS_PROXY,
+  //       keepAliveTimeout: 10,
+  //       keepAliveMaxTimeout: 10,
+  //     }),
+  //   });
+  // };
 
   return graphql.defaults({
     headers: {
       authorization: `token ${token}`,
     },
-    request: { fetch: myFetch },
+    // request: { fetch: myFetch },
     throttle: {
       onRateLimit: (retryAfter, options) => {
         if (verbose) {
