@@ -12,7 +12,7 @@ const TARGET_TOKEN = process.env.TARGET_TOKEN;
 
 // Create a ProxyAgent instance with your proxy settings
 const proxyAgent = new ProxyAgent({
-  uri: process.env.HTTPS_PROXY,  // URL of the proxy server
+  // uri: process.env.HTTPS_PROXY,  // URL of the proxy server
   keepAliveTimeout: 10,          // Optional, set keep-alive timeout
   keepAliveMaxTimeout: 10        // Optional, set max keep-alive timeout
 });
