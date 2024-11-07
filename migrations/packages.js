@@ -295,7 +295,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
       }
     }
 
-    logger.info(`${dryRun ? '[Dry Run] Would migrate' : 'Migrated'} version ${version.name} of ${pkg.name}`);
+    console.log(`${dryRun ? '[Dry Run] Would migrate' : 'Migrated'} version ${version.name} of ${pkg.name}`);
   } catch (error) {
     console.log(`> Error migrating version ${version.name} of ${pkg.name}: ${error.message}`);
     if (error.stack) {
