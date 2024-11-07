@@ -90,8 +90,13 @@ async function fetchPackages(sourceOctokit, sourceOrg, packageType) {
  * @param {boolean} dryRun - Whether to perform a dry run
  */
 async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun) {
+  var counter = 0
   for (const pkg of packages) {
     console.log("> Processing: " + pkg.name)
+    if (counter == 0) {
+      console.log("Skipping")
+      continue
+    }
     try {
       await processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun);
     } catch (error) {
