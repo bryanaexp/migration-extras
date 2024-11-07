@@ -501,10 +501,11 @@ async function publishNpmPackage(org, package_name, package_version) {
  */
 async function pushContainerPackage(downloadPackageUrl, uploadPackageUrl, package_name, filesToUpload, version) {
   for (const file of filesToUpload) {
-    console.log(`> Retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    console.log(`\t\t\t> Retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker tag ${downloadPackageUrl}/${file} ${uploadPackageUrl}/${file}`);
-    logger.info(`pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    console.log(`\t\t\t>pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker push ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    console.log("\t\t\t> Image Pushed")
   }
 }
 
