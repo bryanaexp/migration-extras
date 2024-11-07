@@ -207,13 +207,8 @@ async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
  */
 async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun) {
   console.log("\t> Starting Package Verion Migration")
-  var counter = 0;
   for (const version of versions.reverse()) {
-    if (counter == 0 || counter == 1) {
-      console.log("> Skipping first...")
-      counter+=1
-      continue;
-    }
+
     try {
       await migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun);
     } catch (versionError) {
@@ -221,7 +216,6 @@ async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQ
       console.log('> Moving to next version...\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
       break
     }
-    counter+=1
       console.log('> Moving to next version...\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
   }
 }
