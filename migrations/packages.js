@@ -407,6 +407,12 @@ async function uploadMavenFilesParallel(uploadPackageUrl, packageName, filesToUp
  * @returns {Object} Package content
  */
 async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
+  console.log("\t\t\t> Package type: " + pkg.package_type)
+  console.log("\t\t\t> Package Name: " + pkg.name)
+  console.log("\t\t\t> Org: " + sourceOrg)
+  console.log("\t\t\t> Version: " + versionName)
+
+  
   const { data: packageContent } = await sourceOctokit.packages.getPackageForOrganization({
     package_type: pkg.package_type,
     package_name: pkg.name,
