@@ -300,6 +300,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
     console.log(`${dryRun ? '[Dry Run] Would migrate' : 'Migrated'} version ${version.name} of ${pkg.name}`);
   } catch (error) {
     console.log(`> Error migrating version ${version.name} of ${pkg.name}: ${error.message}`);
+    console.log(error)
     if (error.stack) {
       logger.debug(`Stack trace: ${error.stack}`);
     }
