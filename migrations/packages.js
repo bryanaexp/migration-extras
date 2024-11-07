@@ -114,13 +114,13 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
  */
 async function processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun) {
   console.log(`Processing package: ${pkg.name} (${pkg.package_type})`);
-  if (!(await checkTargetRepository(targetOctokit, targetOrg, pkg.repository.name))) {
-    return;
-  }
+  // if (!(await checkTargetRepository(targetOctokit, targetOrg, pkg.repository.name))) {
+  //   return;
+  // }
 
-  if (await checkPackageExistsInTarget(targetOctokit, targetOrg, pkg.name, pkg.package_type)) {
-    return;
-  }
+  // if (await checkPackageExistsInTarget(targetOctokit, targetOrg, pkg.name, pkg.package_type)) {
+  //   return;
+  // }
 
   const versions = await fetchPackageVersions(sourceOctokit, sourceOrg, pkg);
   
