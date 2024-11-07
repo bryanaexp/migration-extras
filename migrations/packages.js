@@ -423,7 +423,13 @@ async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
  * @param {string} fileName - Name of the file to download
  */
 async function downloadPackageFiles(fileUrl, packageName, fileName) {
-  fs.mkdirSync(`packages/${packageName}`, { recursive: true });
+
+  if (fileName.includes("mcp-dockerfiles")) {
+    fs.mkdirSync(`packages/${packageName}/mcp-dockerfiles`, { recursive: true });
+  }
+  else {
+    fs.mkdirSync(`packages/${packageName}`, { recursive: true });
+  }
   console.log(`Downloading ${fileUrl}`);
   if (fileUrl.includes('ghcr.io')) {
     execSync(`docker pull ${fileUrl}`);
