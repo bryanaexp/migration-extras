@@ -95,6 +95,7 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
     console.log("> Processing: " + pkg.name)
     if (counter == 0) {
       console.log("Skipping")
+      counter+=1
       continue
     }
     try {
