@@ -419,8 +419,27 @@ async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
   console.log("\t\t\t> Org: " + sourceOrg)
   console.log("\t\t\t> Version: " + versionName)
 
+  const testOctoKit = new Octokit({
+    auth: process.env.SOURCE_TOKEN,
+    throttle: {
+      onRateLimit: (retryAfter, options) => {
+        if (verbose) {
+          console.warn(`Request quota exhausted for request ${options.method} ${options.url}`);
+        }
+        if (options.request.retryCount === 0) {
+          console.log(`Retrying after ${retryAfter} seconds!`);
+          return true;
+        }
+      },
+      onAbuseLimit: (retryAfter, options) => {
+        if (verbose) {
+          console.warn(`Abuse detected for request ${options.method} ${options.url}`);
+        }
+      },
+    },
+  });
   
-  const { data: packageContent } = await sourceOctokit.packages.getPackageForOrganization({
+  const { data: packageContent } = await testOctoKit.packages.getPackageForOrganization({
     package_type: pkg.package_type,
     package_name: pkg.name,
     org: sourceOrg,
