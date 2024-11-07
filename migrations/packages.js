@@ -4,6 +4,7 @@ import {execSync} from 'child_process';
 
 import { ProxyAgent, fetch as undiciFetch } from "undici";
 import dotenv from "dotenv";
+import {Octokit} from "@octokit/rest";
 
 dotenv.config();
 
