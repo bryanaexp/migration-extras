@@ -503,7 +503,7 @@ async function pushContainerPackage(downloadPackageUrl, uploadPackageUrl, packag
   for (const file of filesToUpload) {
     console.log(`\t\t\t> Retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker tag ${downloadPackageUrl}/${file} ${uploadPackageUrl}/${file}`);
-    console.log(`\t\t\t>pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    console.log(`\t\t\t> pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
     execSync(`docker push ghcr.io/${process.env.TARGET_ORG}/${file}`);
     console.log("\t\t\t> Image Pushed")
   }
