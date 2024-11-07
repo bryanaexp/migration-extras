@@ -211,6 +211,7 @@ async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQ
   for (const version of versions.reverse()) {
     if (counter == 0) {
       console.log("> Skipping first...")
+      counter+=1
       continue;
     }
     try {
