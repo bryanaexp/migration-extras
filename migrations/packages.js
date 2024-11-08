@@ -454,11 +454,11 @@ function downloadPackageFilesNormal(fileUrl, packageName, fileName) {
     fs.mkdirSync(`packages/${packageName}`, { recursive: true });
   }
   console.log(`\t\t\t> Downloading ${fileUrl}`);
-  // if (fileUrl.includes('ghcr.io')) {
-  //   execSync(`docker pull ${fileUrl}`);
-  //   execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
-  // }
-  // else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
+  if (fileUrl.includes('ghcr.io')) {
+    execSync(`docker pull ${fileUrl}`);
+    execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
+  }
+  else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
 }
 
 /**
