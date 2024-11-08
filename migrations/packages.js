@@ -291,8 +291,8 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
             break
           }
           // console.log("> All files downloaded")
-          // execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
-          // await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
+          exec(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
+          await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
           break;
       }
     }
@@ -525,9 +525,9 @@ async function publishNpmPackage(org, package_name, package_version) {
 async function pushContainerPackage(downloadPackageUrl, uploadPackageUrl, package_name, filesToUpload, version) {
   for (const file of filesToUpload) {
     console.log(`\t\t\t> Retagging ${downloadPackageUrl}/${file} to ghcr.io/${process.env.TARGET_ORG}/${file}`);
-    execSync(`docker tag ${downloadPackageUrl}/${file} ${uploadPackageUrl}/${file}`);
+    exec(`docker tag ${downloadPackageUrl}/${file} ${uploadPackageUrl}/${file}`);
     console.log(`\t\t\t> pushing ghcr.io/${process.env.TARGET_ORG}/${file}`);
-    execSync(`docker push ghcr.io/${process.env.TARGET_ORG}/${file}`);
+    exec(`docker push ghcr.io/${process.env.TARGET_ORG}/${file}`);
     console.log("\t\t\t> Image Pushed")
   }
 }
