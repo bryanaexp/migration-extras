@@ -2,7 +2,7 @@ import fs from 'fs';
 import {logger, setVerbosity} from '../logger.js';
 import {execSync, exec} from 'child_process';
 
-import { ProxyAgent, fetch as undiciFetch } from "undici";
+// import { ProxyAgent, fetch as undiciFetch } from "undici";
 import dotenv from "dotenv";
 import {Octokit} from "@octokit/rest";
 
