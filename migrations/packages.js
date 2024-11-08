@@ -611,10 +611,10 @@ function getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, versionName) 
     uploadPackageUrl = `${uploadBaseUrl}/${groupId}/${artifactId}/${version}`;
   }
 
-  logger.debug(`Download Base URL: ${downloadBaseUrl}`);
-  logger.debug(`Upload Base URL: ${uploadBaseUrl}`);
-  logger.debug(`Download Package URL: ${downloadPackageUrl}`);
-  logger.debug(`Upload Package URL: ${uploadPackageUrl}`);
+  console.log(`\t\t\t> Download Base URL: ${downloadBaseUrl}`);
+  console.log(`\t\t\t> Upload Base URL: ${uploadBaseUrl}`);
+  console.log(`\t\t\t> Download Package URL: ${downloadPackageUrl}`);
+  console.log(`\t\t\t> Upload Package URL: ${uploadPackageUrl}`);
 
   return { groupId, artifactId, repository, downloadBaseUrl, uploadBaseUrl, downloadPackageUrl, uploadPackageUrl };
 }
