@@ -285,12 +285,13 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
         case 'container':
           // execSync(`echo ${process.env.SOURCE_ORG} `);
           // execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
-          // for (const file of filesToDownload) {
-          //   const fileUrl = `${downloadPackageUrl}/${file}`;
+          for (const file of filesToDownload) {
+            const fileUrl = `${downloadPackageUrl}/${file}`;
+            console.log("\t\t\t\t> File URL: " + fileUrl)
           //   // await downloadPackageFiles(fileUrl, pkg.name, file);
           //   downloadPackageFilesNormal(fileUrl, pkg.name, file);
-          //   break
-          // }
+            break
+          }
           // console.log("> All files downloaded")
           // execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
           // await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
