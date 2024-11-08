@@ -458,7 +458,7 @@ function downloadPackageFilesNormal(fileUrl, packageName, fileName) {
     execSync(`docker pull ${fileUrl}`);
     execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
   }
-  else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
+  else downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
 }
 
 /**
