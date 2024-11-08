@@ -98,7 +98,7 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
       logger.error(`Error processing package ${pkg.name}:`, error);
     }
     console.log("*************************************************************************************************************************************************************************************************************************")
-    break
+    // break
   }
 }
 
@@ -239,7 +239,8 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
     console.log('\t\t\t- Package content retrieved successfully');
 
     const { downloadBaseUrl, downloadPackageUrl, uploadPackageUrl } = getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, version.name);
-
+    console.log("\t\t\t> Download URL: " + downloadPackageUrl)
+    
     let filesToDownload = [];
     switch (pkg.package_type) {
       case 'maven':
@@ -282,17 +283,17 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
           await publishNpmPackage(targetOrg, pkg.name, version.name);
           break;
         case 'container':
-          execSync(`echo ${process.env.SOURCE_ORG} `);
-          execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
-          for (const file of filesToDownload) {
-            const fileUrl = `${downloadPackageUrl}/${file}`;
-            // await downloadPackageFiles(fileUrl, pkg.name, file);
-            downloadPackageFilesNormal(fileUrl, pkg.name, file);
-            break
-          }
+          // execSync(`echo ${process.env.SOURCE_ORG} `);
+          // execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
+          // for (const file of filesToDownload) {
+          //   const fileUrl = `${downloadPackageUrl}/${file}`;
+          //   // await downloadPackageFiles(fileUrl, pkg.name, file);
+          //   downloadPackageFilesNormal(fileUrl, pkg.name, file);
+          //   break
+          // }
           // console.log("> All files downloaded")
-          execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
-          await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
+          // execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
+          // await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
           break;
       }
     }
