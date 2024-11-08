@@ -239,7 +239,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
     console.log('\t\t\t- Package content retrieved successfully');
 
     const { downloadBaseUrl, downloadPackageUrl, uploadPackageUrl } = getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, version.name);
-    console.log("\t\t\t> Download URL: " + downloadPackageUrl)
+    // console.log("\t\t\t> Download URL: " + downloadPackageUrl)
     
     let filesToDownload = [];
     switch (pkg.package_type) {
