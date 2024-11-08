@@ -237,10 +237,6 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
   try {
     const packageContent = await getPackageContent(sourceOctokit, sourceOrg, pkg, version.name);
     console.log('\t\t\t- Package content retrieved successfully');
-    if (1 == 1) {
-      console.log("skipping......")
-      return
-    }
 
     const { downloadBaseUrl, downloadPackageUrl, uploadPackageUrl } = getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, version.name);
 
