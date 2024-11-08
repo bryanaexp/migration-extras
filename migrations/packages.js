@@ -286,7 +286,8 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
           execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
           for (const file of filesToDownload) {
             const fileUrl = `${downloadPackageUrl}/${file}`;
-            await downloadPackageFiles(fileUrl, pkg.name, file);
+            // await downloadPackageFiles(fileUrl, pkg.name, file);
+            downloadPackageFilesNormal(fileUrl, pkg.name, file);
             break
           }
           // console.log("> All files downloaded")
@@ -431,6 +432,21 @@ async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
  */
 async function downloadPackageFiles(fileUrl, packageName, fileName) {
 
+  if (fileName.includes("mcp-dockerfiles")) {
+    fs.mkdirSync(`packages/${packageName}/mcp-dockerfiles`, { recursive: true });
+  }
+  else {
+    fs.mkdirSync(`packages/${packageName}`, { recursive: true });
+  }
+  console.log(`\t\t\t> Downloading ${fileUrl}`);
+  // if (fileUrl.includes('ghcr.io')) {
+  //   execSync(`docker pull ${fileUrl}`);
+  //   execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
+  // }
+  // else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
+}
+
+function downloadPackageFilesNormal(fileUrl, packageName, fileName) {
   if (fileName.includes("mcp-dockerfiles")) {
     fs.mkdirSync(`packages/${packageName}/mcp-dockerfiles`, { recursive: true });
   }
