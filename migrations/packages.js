@@ -284,11 +284,11 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
         case 'container':
           execSync(`echo ${process.env.SOURCE_ORG} `);
           execSync(`docker login ghcr.io -u ${process.env.SOURCE_ORG} -p ${process.env.SOURCE_TOKEN}`);
-          // for (const file of filesToDownload) {
-          //   const fileUrl = `${downloadPackageUrl}/${file}`;
-          //   await downloadPackageFiles(fileUrl, pkg.name, file);
-          //   break
-          // }
+          for (const file of filesToDownload) {
+            const fileUrl = `${downloadPackageUrl}/${file}`;
+            await downloadPackageFiles(fileUrl, pkg.name, file);
+            break
+          }
           // console.log("> All files downloaded")
           // execSync(`docker login ghcr.io -u ${process.env.TARGET_ORG} -p ${process.env.TARGET_TOKEN}`);
           // await pushContainerPackage(downloadPackageUrl, uploadPackageUrl, pkg.name, filesToDownload, version);
@@ -437,12 +437,12 @@ async function downloadPackageFiles(fileUrl, packageName, fileName) {
   else {
     fs.mkdirSync(`packages/${packageName}`, { recursive: true });
   }
-  console.log(`Downloading ${fileUrl}`);
-  if (fileUrl.includes('ghcr.io')) {
-    execSync(`docker pull ${fileUrl}`);
-    execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
-  }
-  else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
+  console.log(`\t\t\t> Downloading ${fileUrl}`);
+  // if (fileUrl.includes('ghcr.io')) {
+  //   execSync(`docker pull ${fileUrl}`);
+  //   execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
+  // }
+  // else await downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
 }
 
 /**
