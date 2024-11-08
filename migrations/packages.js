@@ -208,13 +208,7 @@ async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
  */
 async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun) {
   console.log("\t> Starting Package Verion Migration")
-  var counter = 0
   for (const version of versions.reverse()) {
-    if (counter == 0) {
-      counter+=1
-      console.log("Skipping...")
-      continue
-    }
     try {
       await migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun);
     } catch (versionError) {
@@ -243,6 +237,10 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
   try {
     const packageContent = await getPackageContent(sourceOctokit, sourceOrg, pkg, version.name);
     console.log('\t\t\t- Package content retrieved successfully');
+    if (1 == 1) {
+      console.log("skipping......")
+      return
+    }
 
     const { downloadBaseUrl, downloadPackageUrl, uploadPackageUrl } = getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, version.name);
 
@@ -419,12 +417,8 @@ async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
   console.log("\t\t\t> Package Name: " + pkg.name)
   console.log("\t\t\t> Org: " + sourceOrg)
   console.log("\t\t\t> Version: " + versionName)
-
-  const testOctoKit = new Octokit({
-    auth: process.env.SOURCE_TOKEN
-  });
   
-  const { data: packageContent } = await testOctoKit.packages.getPackageForOrganization({
+  const { data: packageContent } = await sourceOctokit.packages.getPackageForOrganization({
     package_type: pkg.package_type,
     package_name: pkg.name,
     org: sourceOrg,
