@@ -412,10 +412,10 @@ async function uploadMavenFilesParallel(uploadPackageUrl, packageName, filesToUp
  * @returns {Object} Package content
  */
 async function getPackageContent(sourceOctokit, sourceOrg, pkg, versionName) {
-  console.log("\t\t\t> Package type: " + pkg.package_type)
-  console.log("\t\t\t> Package Name: " + pkg.name)
-  console.log("\t\t\t> Org: " + sourceOrg)
-  console.log("\t\t\t> Version: " + versionName)
+  // console.log("\t\t\t> Package type: " + pkg.package_type)
+  // console.log("\t\t\t> Package Name: " + pkg.name)
+  // console.log("\t\t\t> Org: " + sourceOrg)
+  // console.log("\t\t\t> Version: " + versionName)
   
   const { data: packageContent } = await sourceOctokit.packages.getPackageForOrganization({
     package_type: pkg.package_type,
@@ -625,10 +625,10 @@ function getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, versionName) 
     uploadPackageUrl = `${uploadBaseUrl}/${groupId}/${artifactId}/${version}`;
   }
 
-  console.log(`\t\t\t> Download Base URL: ${downloadBaseUrl}`);
-  console.log(`\t\t\t> Upload Base URL: ${uploadBaseUrl}`);
-  console.log(`\t\t\t> Download Package URL: ${downloadPackageUrl}`);
-  console.log(`\t\t\t> Upload Package URL: ${uploadPackageUrl}`);
+  // console.log(`\t\t\t> Download Base URL: ${downloadBaseUrl}`);
+  // console.log(`\t\t\t> Upload Base URL: ${uploadBaseUrl}`);
+  // console.log(`\t\t\t> Download Package URL: ${downloadPackageUrl}`);
+  // console.log(`\t\t\t> Upload Package URL: ${uploadPackageUrl}`);
 
   return { groupId, artifactId, repository, downloadBaseUrl, uploadBaseUrl, downloadPackageUrl, uploadPackageUrl };
 }
