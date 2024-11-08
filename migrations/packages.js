@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {logger, setVerbosity} from '../logger.js';
-import {execSync} from 'child_process';
+import {execSync, exec} from 'child_process';
 
 import { ProxyAgent, fetch as undiciFetch } from "undici";
 import dotenv from "dotenv";
@@ -455,8 +455,8 @@ function downloadPackageFilesNormal(fileUrl, packageName, fileName) {
   }
   console.log(`\t\t\t> Downloading ${fileUrl}`);
   if (fileUrl.includes('ghcr.io')) {
-    execSync(`docker pull ${fileUrl}`);
-    execSync(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
+    exec(`docker pull ${fileUrl}`);
+    exec(`docker save ${fileUrl} -o packages/${packageName}/${fileName}`);
   }
   else downloadFile(fileUrl, `packages/${packageName}/${fileName}`);
 }
