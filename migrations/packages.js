@@ -27,17 +27,22 @@ const myFetch = (url, options = {}) => {
 };
 
 
-export async function migratePackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packageType, dryRun, verbose, page, startIndex, endIndex, state, versionIndex) {
-  console.log("START PAGE : " + page )
-  console.log("START INDEX: " + startIndex)
-  console.log("END INDEX: " + endIndex)
-
+export async function migratePackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packageType, dryRun, verbose, page, startIndex, endIndex, packageInputFile, versionIndex) {
   setVerbosity(verbose);
-  logger.info(`Starting package migration process... (Dry Run: ${dryRun})`);
+  // logger.info(`Starting package migration process... (Dry Run: ${dryRun})`);
+  console.log("[Start Index]: " + startIndex)
+  console.log("[End Index]: " + endIndex)
+  console.log("[Version Index]: " + versionIndex)
+  console.log("[Package Input File]: " + packageInputFile)
   try {
-    var input_file_name = "wow"
-    const packages = await fetchPackages(sourceOctokit, sourceOrg, packageType, page, input_file_name);
-    await processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun, startIndex, endIndex, state, versionIndex);
+    const packages = await fetchPackages(sourceOctokit, sourceOrg, packageType, page, packageInputFile);
+    var useSkipFile = false
+    if (packageInputFile.length === 0) {
+      useSkipFile = true
+    }
+    useSkipFile = true
+    console.log("[Skip File Active]: " + useSkipFile)
+    await processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun, startIndex, endIndex, useSkipFile, versionIndex);
   } catch (error) {
     logger.error('Error migrating packages:', error);
   }
@@ -46,7 +51,7 @@ export async function migratePackages(sourceOctokit, targetOctokit, sourceGraphQ
 async function fetchPackages(sourceOctokit, sourceOrg, packageType, page, input_file_name) {
   console.log("Fetching packages...")
   if (input_file_name.length === 0) {
-    console.log("Pulling from API...")
+    console.log(" - Pulling from API...")
       const { data: packages } = await sourceOctokit.packages.listPackagesForOrganization({
         package_type: packageType,
         org: sourceOrg,
@@ -58,37 +63,31 @@ async function fetchPackages(sourceOctokit, sourceOrg, packageType, page, input_
     return packages;
   }
   else {
-    console.log("Pulling from local list...")
-    var manual_packages = []
-    await fs.readFile('priority_packs/node50.txt', 'utf8', function (err, data) {
-      var lines = data.split('\n');
-      for (let i=0;i<lines.length;i++) {
-        console.log(lines[i])
-        manual_packages.push({
-          "name": lines[i],
-          "package_type": "maven"
-        })
-      }
-    });
+    console.log(" - Pulling from local list...")
+    let manualPackages = loadPackages(input_file_name)
 
-    console.log(`Found ${manual_packages.length} packages in organization: ${sourceOrg}`);
-    console.log(manual_packages)
-    return manual_packages;
+    return manualPackages
   }
 
 }
 
 
-async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun, startIndex, endIndex, state, versionIndex) {
+async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, packages, dryRun, startIndex, endIndex, useSkipFile, versionIndex) {
   var counter = 1
   var package_start_index = Number(startIndex)
   var package_end_index = Number(endIndex)
-  console.log("Starting at: " + package_start_index)
-  console.log("Ending at: " + package_end_index)
-  console.log("Version Index: " + versionIndex)
 
+  let packageSkipList = loadPackages("skip_packages_list.txt")
   for (const pkg of packages) {
     console.log(`(${counter}/${packages.length}) Processing package: ${pkg.name} (${pkg.package_type})`);
+    if (useSkipFile) {
+      for (const skipPkg of packageSkipList) {
+        console.log("> " + skipPkg.name)
+        if (pkg.name === skipPkg.name) {
+          console.log("MATCH")
+        }
+      }
+    }
     if (counter<package_start_index) {
       console.log(`\t - Skipping until reached started ${package_start_index}`)
       counter++
@@ -101,7 +100,7 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
     }
 
     try {
-      await processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun, state, versionIndex);
+      await processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun, versionIndex);
     } catch (error) {
       logger.error(`Error processing package ${pkg.name}:`, error);
       break
@@ -114,19 +113,36 @@ async function processPackages(sourceOctokit, targetOctokit, sourceGraphQL, targ
   }
 }
 
+async function loadPackages(fileName) {
+  const manual_packages = [];
 
-async function processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun, state, versionIndex) {
+  try {
+    const data = await fs.promises.readFile(`priority_packs/${fileName}`, 'utf8');
+    const lines = data.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      manual_packages.push({
+        name: lines[i],
+        package_type: "maven"
+      });
+    }
+
+    return manual_packages;
+  } catch (err) {
+    console.error('Error occurred:', err);  // Debug point 6
+    throw err;
+  }
+}
+async function processPackage(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, dryRun, versionIndex) {
   const versions = await fetchPackageVersions(sourceOctokit, sourceOrg, pkg);
 
   if (dryRun) {
     logger.info(`[Dry Run] Would migrate package: ${pkg.name} from ${sourceOrg} to ${targetOrg}`);
     logger.info(`[Dry Run] Versions to migrate: ${versions.map(v => v.name).join(', ')}`);
   } else {
-    await migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun, state, versionIndex);
+    await migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun, versionIndex);
   }
 }
-
-
 
 async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
   console.log(`\t> Fetching versions of package: ${pkg.name} ${pkg.package_type}` )
@@ -157,7 +173,7 @@ async function fetchPackageVersions(sourceOctokit, sourceOrg, pkg) {
 }
 
 
-async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun, state, versionIndex) {
+async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, versions, dryRun, versionIndex) {
   console.log("\t> Starting Package Verion Migration")
   var counter = 1
   var total = versions.length
@@ -170,7 +186,7 @@ async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQ
       continue
     }
     try {
-      await migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun, state);
+      await migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun);
     } catch (versionError) {
       throw versionError
     }
@@ -179,7 +195,7 @@ async function migratePackageVersions(sourceOctokit, targetOctokit, sourceGraphQ
   }
 }
 
-async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun, state) {
+async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL, sourceOrg, targetOrg, pkg, version, dryRun) {
   // console.log(`\t\t> Migrating version ${version.name} of package ${pkg.name}`);
 
   try {
@@ -216,7 +232,6 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
       switch (pkg.package_type) {
         case 'maven':
         case 'gradle':
-          console.log("STATE HERE: " + state)
           //check if cache exists
           if (fs.existsSync(`packages/${pkg.name}/${version.name}`)) {
             console.log("\t\t- Cache HIT [packages/" + pkg.name + "/" + version.name + "]" )
@@ -227,9 +242,7 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
             await downloadMavenFilesParallel(downloadPackageUrl, pkg.name, version.name, filesToDownload);
             await uploadMavenFilesParallel(uploadPackageUrl, pkg.name, version.name,filesToDownload);
           }
-
           break;
-
       }
     }
 
@@ -243,7 +256,6 @@ async function migratePackageVersion(sourceOctokit, sourceGraphQL, targetGraphQL
     throw error; // Re-throw to be handled by the caller
   }
 }
-
 
 async function downloadMavenFilesParallel(downloadPackageUrl, packageName, version, filesToDownload) {
   const concurrency = parseInt(process.env.MAVEN_CONCURRENCY || '4');
@@ -292,7 +304,6 @@ async function downloadMavenFilesParallel(downloadPackageUrl, packageName, versi
   console.log(`\t\t\t\t- Successfully downloaded ${filesToDownload.length} files in parallel`);
 }
 
-
 async function uploadMavenFilesParallel(uploadPackageUrl, packageName, version, filesToUpload) {
   const concurrency = parseInt(process.env.MAVEN_CONCURRENCY || '4');
   const chunks = [];
@@ -333,7 +344,6 @@ async function uploadMavenFilesParallel(uploadPackageUrl, packageName, version, 
       }
     }));
   }
-
   console.log(`\t\t\t\t- Successfully uploaded [${filesToUpload.length}] files in parallel`);
 }
 
@@ -377,8 +387,6 @@ function getUploadHeaders(file, fileContent) {
   return headers;
 }
 
-
-
 function getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, versionName) {
   // logger.debug('Package content:', JSON.stringify(packageContent, null, 2));
 
@@ -401,7 +409,6 @@ function getPackageUrls(pkg, packageContent, sourceOrg, targetOrg, versionName) 
 
   return { groupId, artifactId, repository, downloadBaseUrl, uploadBaseUrl, downloadPackageUrl, uploadPackageUrl };
 }
-
 
 async function listMavenPackageAssets(package_type, package_name, sourceGraphQL, targetGraphQL, org, package_version) {
   const query = `
