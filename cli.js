@@ -21,19 +21,19 @@ dotenv.config();
  */
 async function createOctokitInstance(token, verbose) {
 
-  // const myFetch = (url, opts) => {
-  //   return undiciFetch(url, {
-  //     ...opts,
-  //     dispatcher: new ProxyAgent({
-  //       uri: process.env.HTTPS_PROXY,
-  //       keepAliveTimeout: 10,
-  //       keepAliveMaxTimeout: 10,
-  //     }),
-  //   });
-  // };
+  const myFetch = (url, opts) => {
+    return undiciFetch(url, {
+      ...opts,
+      dispatcher: new ProxyAgent({
+        uri: process.env.HTTPS_PROXY,
+        keepAliveTimeout: 10,
+        keepAliveMaxTimeout: 10,
+      }),
+    });
+  };
 
   const octokit = new Octokit({
-    // request: { fetch: myFetch },
+    request: { fetch: myFetch },
     auth: token,
     throttle: {
       onRateLimit: (retryAfter, options) => {
@@ -57,22 +57,22 @@ async function createOctokitInstance(token, verbose) {
 }
 
 async function createGraphQLInstance(token, verbose) {
-  // const myFetch = (url, opts) => {
-  //   return undiciFetch(url, {
-  //     ...opts,
-  //     dispatcher: new ProxyAgent({
-  //       uri: process.env.HTTPS_PROXY,
-  //       keepAliveTimeout: 10,
-  //       keepAliveMaxTimeout: 10,
-  //     }),
-  //   });
-  // };
+  const myFetch = (url, opts) => {
+    return undiciFetch(url, {
+      ...opts,
+      dispatcher: new ProxyAgent({
+        uri: process.env.HTTPS_PROXY,
+        keepAliveTimeout: 10,
+        keepAliveMaxTimeout: 10,
+      }),
+    });
+  };
 
   return graphql.defaults({
     headers: {
       authorization: `token ${token}`,
     },
-    // request: { fetch: myFetch },
+    request: { fetch: myFetch },
     throttle: {
       onRateLimit: (retryAfter, options) => {
         if (verbose) {
@@ -105,7 +105,12 @@ async function runMigration(argv, migrationFunction, component) {
     "target-org": targetCLI, 
     "dry-run": dryRun,
     "package-type": packageType,
-    verbose
+    verbose,
+    "page": page,
+    "start-index": startIndex,
+    "end-index": endIndex,
+    "state": state,
+    "version-index": versionIndex
   } = argv;
   
   const sourceOrgToUse = process.env.SOURCE_ORG || sourceCLI;
@@ -141,7 +146,12 @@ async function runMigration(argv, migrationFunction, component) {
       targetOrgToUse,
       packageType,
       dryRun,
-      verbose
+      verbose,
+      page,
+      startIndex,
+      endIndex,
+      state,
+      versionIndex
     );
 
     if (verbose) {
@@ -192,6 +202,26 @@ yargs(hideBin(process.argv))
           type: "boolean",
           describe: "Enable verbose output",
           default: false,
+        })
+        .option("page", {
+          type: "string",
+          describe: "Start Page",
+        })
+        .option("start-index", {
+          type: "string",
+          describe: "Start Index",
+        })
+        .option("end-index", {
+          type: "string",
+          describe: "End Index",
+        })
+        .option("state", {
+          type: "string",
+          describe: "State download or upload",
+        })
+        .option("version-index", {
+          type: "string",
+          describe: "Index of where to start",
         })
         .help();
     },
